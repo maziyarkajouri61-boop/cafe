@@ -1,18 +1,14 @@
 export default async function handler(req, res) {
-  res.status(200).json({ ok: true });
-
-  if (req.method !== "POST") return;
+  if (req.method !== "POST") return res.status(200).json({ ok: true });
 
   const msg = req.body?.message;
-  if (!msg?.text || !msg?.chat?.id) return;
+  if (!msg?.text || !msg?.chat?.id) return res.status(200).json({ ok: true });
 
   const chatId = msg.chat.id;
   const text = msg.text;
-
   const BASE = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 
   try {
-    // Test: just echo back
     await fetch(`${BASE}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -24,4 +20,6 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error(err);
   }
+
+  return res.status(200).json({ ok: true });
 }
