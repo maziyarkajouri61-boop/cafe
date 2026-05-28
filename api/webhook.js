@@ -1,4 +1,4 @@
-import { sendMessage, sendButtons, answerCallback, notifyAdmin } from "../lip/telegram.js";
+import { sendMessage, sendButtons, answerCallback, notifyAdmin } from "../lib/telegram.js";
 import { setState, getState, clearState, saveReservation, findAvailableTable, cancelReservation, getReservation, getReservationsByDate } from "../lib/db.js";
 import { extractReservation } from "../lib/claude.js";
 
