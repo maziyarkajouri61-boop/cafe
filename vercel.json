@@ -4,9 +4,5 @@
     "api/webhook.js": { "maxDuration": 15 },
     "api/webapp-reserve.js": { "maxDuration": 15 },
     "api/app.js": { "maxDuration": 10 }
-  },
-  "routes": [
-    { "src": "/app", "dest": "/api/app.js" },
-    { "src": "/api/(.*)", "dest": "/api/$1" }
-  ]
+  }
 }
