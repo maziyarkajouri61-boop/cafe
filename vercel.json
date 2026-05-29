@@ -2,11 +2,11 @@
   "version": 2,
   "functions": {
     "api/webhook.js": { "maxDuration": 15 },
-    "api/webapp-reserve.js": { "maxDuration": 15 }
+    "api/webapp-reserve.js": { "maxDuration": 15 },
+    "api/app.js": { "maxDuration": 10 }
   },
   "routes": [
-    { "src": "/app", "dest": "/public/index.html" },
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/public/$1" }
+    { "src": "/app", "dest": "/api/app.js" },
+    { "src": "/api/(.*)", "dest": "/api/$1" }
   ]
 }
