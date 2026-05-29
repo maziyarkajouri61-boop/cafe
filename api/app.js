@@ -1,8 +1,911 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
-
 export default function handler(req, res) {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  const html = readFileSync(join(process.cwd(), 'public/index.html'), 'utf8');
-  res.status(200).send(html);
+  res.setHeader('Cache-Control', 'no-cache');
+  res.status(200).send(`<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ingo Cafe</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf6f0;
+    --warm: #f5ede0;
+    --brown: #6b4c35;
+    --brown-light: #9b7355;
+    --brown-dark: #3d2b1a;
+    --accent: #c8956c;
+    --accent2: #e8b88a;
+    --text: #2d1f14;
+    --muted: #9b8070;
+    --border: rgba(107,76,53,0.15);
+    --shadow: rgba(61,43,26,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background blobs */
+  .bg {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.35;
+    animation: float linear infinite;
+  }
+
+  .blob:nth-child(1) { width: 300px; height: 300px; background: #e8c9a0; top: -80px; left: -80px; animation-duration: 18s; }
+  .blob:nth-child(2) { width: 200px; height: 200px; background: #d4a574; top: 30%; right: -60px; animation-duration: 14s; animation-delay: -5s; }
+  .blob:nth-child(3) { width: 250px; height: 250px; background: #f0dcc0; bottom: 10%; left: 10%; animation-duration: 20s; animation-delay: -8s; }
+  .blob:nth-child(4) { width: 150px; height: 150px; background: #c8956c; top: 60%; right: 20%; animation-duration: 16s; animation-delay: -3s; }
+  .blob:nth-child(5) { width: 180px; height: 180px; background: #ead5b5; top: 45%; left: 30%; animation-duration: 22s; animation-delay: -11s; }
+
+  @keyframes float {
+    0%   { transform: translate(0, 0) scale(1); }
+    25%  { transform: translate(20px, -30px) scale(1.05); }
+    50%  { transform: translate(-15px, 20px) scale(0.95); }
+    75%  { transform: translate(25px, 10px) scale(1.03); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+
+  /* Floating circles decoration */
+  .circles {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid rgba(107,76,53,0.12);
+    animation: spin linear infinite;
+  }
+
+  .circle:nth-child(1) { width: 120px; height: 120px; top: 5%; right: 8%; animation-duration: 25s; }
+  .circle:nth-child(2) { width: 60px; height: 60px; top: 5%; right: 13%; animation-duration: 18s; animation-direction: reverse; }
+  .circle:nth-child(3) { width: 80px; height: 80px; bottom: 15%; left: 5%; animation-duration: 22s; }
+  .circle:nth-child(4) { width: 40px; height: 40px; top: 40%; left: 3%; animation-duration: 15s; animation-direction: reverse; }
+  .circle:nth-child(5) { width: 160px; height: 160px; bottom: 5%; right: -20px; animation-duration: 30s; }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Dots */
+  .dot {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--brown-light);
+    opacity: 0.15;
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.15; }
+    50% { transform: scale(1.4); opacity: 0.25; }
+  }
+
+  /* Main content */
+  .content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* SCREEN: Welcome */
+  .screen {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    animation: fadeIn 0.4s ease;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Welcome screen */
+  .welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 28px;
+    text-align: center;
+    gap: 0;
+  }
+
+  .logo-wrap {
+    margin-bottom: 28px;
+    animation: logoIn 0.8s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  @keyframes logoIn {
+    from { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+    to { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .logo-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brown) 0%, var(--accent) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 600;
+    color: white;
+    box-shadow: 0 20px 60px rgba(107,76,53,0.35);
+    margin: 0 auto;
+  }
+
+  .welcome h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    color: var(--brown-dark);
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+    animation: slideUp 0.6s ease 0.2s both;
+  }
+
+  .welcome .tagline {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+    animation: slideUp 0.6s ease 0.3s both;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .welcome-actions {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: slideUp 0.6s ease 0.4s both;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--brown) 0%, var(--brown-light) 100%);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 18px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(107,76,53,0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(107,76,53,0.2); }
+
+  .btn-secondary {
+    background: white;
+    color: var(--brown);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .btn-secondary:active { transform: scale(0.97); background: var(--warm); }
+
+  /* Form screens */
+  .form-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .form-header {
+    padding: 24px 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .back-btn {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    color: var(--brown);
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .back-btn:active { background: var(--warm); }
+
+  .form-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--brown-dark);
+  }
+
+  .step-indicator {
+    display: flex;
+    gap: 6px;
+    padding: 20px 24px 0;
+  }
+  .step-dot {
+    height: 3px;
+    border-radius: 99px;
+    background: var(--border);
+    flex: 1;
+    transition: background 0.3s;
+  }
+  .step-dot.active { background: var(--accent); }
+  .step-dot.done { background: var(--brown); }
+
+  .form-body {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  /* Name input */
+  .name-input-wrap {
+    margin-top: 16px;
+  }
+
+  .name-input-wrap label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .name-input {
+    width: 100%;
+    padding: 18px 20px;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    background: white;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--brown-dark);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+  .name-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px rgba(200,149,108,0.2);
+  }
+  .name-input::placeholder { color: #c5aea0; }
+
+  /* Date grid */
+  .date-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .date-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+  .date-card:active, .date-card.selected {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #fff9f5, #fff4ec);
+    box-shadow: 0 4px 20px rgba(200,149,108,0.2);
+  }
+
+  .date-card .date-main {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--brown-dark);
+  }
+  .date-card .date-day {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .date-card .date-today {
+    font-size: 11px;
+    background: var(--accent);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-weight: 500;
+  }
+
+  /* Time grid */
+  .time-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .time-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .time-card:active, .time-card.selected {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #fff9f5, #fff4ec);
+    box-shadow: 0 4px 16px rgba(200,149,108,0.2);
+  }
+  .time-card .time-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--brown-dark);
+  }
+  .time-card .time-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* Guest grid */
+  .guest-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .guest-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .guest-card:active, .guest-card.selected {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #fff9f5, #fff4ec);
+    box-shadow: 0 4px 16px rgba(200,149,108,0.2);
+  }
+  .guest-card .guest-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    color: var(--brown-dark);
+  }
+  .guest-card .guest-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Summary */
+  .summary-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 24px var(--shadow);
+    border: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  .summary-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-row:last-child { border-bottom: none; }
+
+  .summary-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--warm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .summary-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+  .summary-value { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--brown-dark); margin-top: 1px; }
+
+  /* Bottom action */
+  .form-footer {
+    padding: 16px 24px 32px;
+    background: linear-gradient(to top, var(--cream) 70%, transparent);
+  }
+
+  /* Success */
+  .success-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 28px;
+    text-align: center;
+  }
+
+  .success-icon {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brown), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px;
+    margin-bottom: 24px;
+    box-shadow: 0 16px 48px rgba(107,76,53,0.3);
+    animation: popIn 0.5s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .success-screen h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 300;
+    color: var(--brown-dark);
+    margin-bottom: 8px;
+  }
+
+  .success-screen p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .res-id-box {
+    background: var(--warm);
+    border: 1px dashed var(--accent);
+    border-radius: 14px;
+    padding: 14px 24px;
+    font-family: monospace;
+    font-size: 14px;
+    color: var(--brown);
+    margin-bottom: 32px;
+    cursor: pointer;
+  }
+
+  /* Loading */
+  .loader {
+    display: none;
+    width: 24px; height: 24px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin2 0.7s linear infinite;
+    margin: 0 auto;
+  }
+  @keyframes spin2 { to { transform: rotate(360deg); } }
+
+  .btn-primary.loading .btn-text { display: none; }
+  .btn-primary.loading .loader { display: block; }
+
+  /* Subtitle */
+  .form-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Animated background -->
+<div class="bg">
+  <div class="blob"></div>
+  <div class="blob"></div>
+  <div class="blob"></div>
+  <div class="blob"></div>
+  <div class="blob"></div>
+</div>
+<div class="circles">
+  <div class="circle"></div>
+  <div class="circle"></div>
+  <div class="circle"></div>
+  <div class="circle"></div>
+  <div class="circle"></div>
+</div>
+
+<div class="content">
+
+  <!-- SCREEN 0: Welcome -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome">
+      <div class="logo-wrap">
+        <div class="logo-circle">I</div>
+      </div>
+      <h1>Ingo</h1>
+      <p class="tagline">Cafe & Bistro</p>
+      <div class="welcome-actions">
+        <button class="btn-primary" onclick="goTo('screen-name')">
+          📅 Rezervasyon Yap
+        </button>
+        <button class="btn-secondary" onclick="goTo('screen-cancel')">
+          ❌ Rezervasyon İptal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: Name -->
+  <div class="screen" id="screen-name">
+    <div class="form-header">
+      <button class="back-btn" onclick="goTo('screen-welcome')">←</button>
+      <div>
+        <div class="form-title">Adınız</div>
+        <div class="form-subtitle">Your name</div>
+      </div>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot active" id="s1"></div>
+      <div class="step-dot" id="s2"></div>
+      <div class="step-dot" id="s3"></div>
+      <div class="step-dot" id="s4"></div>
+    </div>
+    <div class="form-body">
+      <div class="name-input-wrap">
+        <label>İSİM / NAME</label>
+        <input class="name-input" id="nameInput" type="text" placeholder="Adınızı yazın..." autocomplete="off" autocorrect="off">
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary" onclick="submitName()">
+        <span class="btn-text">Devam Et →</span>
+        <div class="loader"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Date -->
+  <div class="screen" id="screen-date">
+    <div class="form-header">
+      <button class="back-btn" onclick="goTo('screen-name')">←</button>
+      <div>
+        <div class="form-title">Tarih</div>
+        <div class="form-subtitle">Choose a date</div>
+      </div>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="form-body">
+      <div class="date-grid" id="dateGrid"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Time -->
+  <div class="screen" id="screen-time">
+    <div class="form-header">
+      <button class="back-btn" onclick="goTo('screen-date')">←</button>
+      <div>
+        <div class="form-title">Saat</div>
+        <div class="form-subtitle">Choose a time</div>
+      </div>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="form-body">
+      <div class="time-grid" id="timeGrid"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: Guests -->
+  <div class="screen" id="screen-guests">
+    <div class="form-header">
+      <button class="back-btn" onclick="goTo('screen-time')">←</button>
+      <div>
+        <div class="form-title">Kişi Sayısı</div>
+        <div class="form-subtitle">Number of guests</div>
+      </div>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+    </div>
+    <div class="form-body">
+      <div class="guest-grid" id="guestGrid"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: Confirm -->
+  <div class="screen" id="screen-confirm">
+    <div class="form-header">
+      <button class="back-btn" onclick="goTo('screen-guests')">←</button>
+      <div>
+        <div class="form-title">Özet</div>
+        <div class="form-subtitle">Reservation summary</div>
+      </div>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+    </div>
+    <div class="form-body">
+      <div class="summary-card">
+        <div class="summary-row">
+          <div class="summary-icon">👤</div>
+          <div><div class="summary-label">İsim / Name</div><div class="summary-value" id="sumName"></div></div>
+        </div>
+        <div class="summary-row">
+          <div class="summary-icon">📅</div>
+          <div><div class="summary-label">Tarih / Date</div><div class="summary-value" id="sumDate"></div></div>
+        </div>
+        <div class="summary-row">
+          <div class="summary-icon">⏰</div>
+          <div><div class="summary-label">Saat / Time</div><div class="summary-value" id="sumTime"></div></div>
+        </div>
+        <div class="summary-row">
+          <div class="summary-icon">👥</div>
+          <div><div class="summary-label">Kişi / Guests</div><div class="summary-value" id="sumGuests"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary" id="confirmBtn" onclick="submitReservation()">
+        <span class="btn-text">✅ Onayla / Confirm</span>
+        <div class="loader"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN 6: Success -->
+  <div class="screen" id="screen-success">
+    <div class="success-screen">
+      <div class="success-icon">🎉</div>
+      <h2>Rezervasyon Onaylandı!</h2>
+      <p>Rezervasyonunuz başarıyla oluşturuldu.<br>We look forward to seeing you!</p>
+      <div class="res-id-box" id="resIdBox" onclick="copyId()">
+        Rezervasyon ID: <span id="resIdText">—</span><br>
+        <span style="font-size:11px;opacity:0.6">Kopyalamak için tıklayın</span>
+      </div>
+      <button class="btn-primary" onclick="goTo('screen-welcome')">
+        Kapat / Close
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN: Cancel -->
+  <div class="screen" id="screen-cancel">
+    <div class="form-header">
+      <button class="back-btn" onclick="goTo('screen-welcome')">←</button>
+      <div>
+        <div class="form-title">İptal</div>
+        <div class="form-subtitle">Cancel reservation</div>
+      </div>
+    </div>
+    <div class="form-body">
+      <div class="name-input-wrap" style="margin-top:16px">
+        <label>REZERVASYON ID</label>
+        <input class="name-input" id="cancelInput" type="text" placeholder="RES-1234567890" autocomplete="off">
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary" onclick="submitCancel()">
+        <span class="btn-text">❌ İptal Et / Cancel</span>
+        <div class="loader"></div>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+  if (tg) { tg.expand(); tg.setHeaderColor('#faf6f0'); }
+
+  const TR_MONTHS = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+  const TR_DAYS = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+  const TIME_SLOTS = ["10:00","12:00","14:00","16:00","18:00","20:00"];
+
+  let reservation = { name: "", date: "", dateLabel: "", time: "", guests: 0 };
+
+  function goTo(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    if (screenId === 'screen-date') buildDateGrid();
+    if (screenId === 'screen-time') buildTimeGrid();
+    if (screenId === 'screen-guests') buildGuestGrid();
+    if (screenId === 'screen-confirm') buildSummary();
+  }
+
+  function submitName() {
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name) { document.getElementById('nameInput').focus(); return; }
+    reservation.name = name;
+    goTo('screen-date');
+  }
+
+  document.getElementById('nameInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitName();
+  });
+
+  function getNextDays(count) {
+    const days = [];
+    const now = Date.now() + 3.5 * 60 * 60 * 1000;
+    for (let i = 0; i < count; i++) {
+      const d = new Date(now + i * 86400000);
+      const yyyy = d.getUTCFullYear();
+      const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const dd = String(d.getUTCDate()).padStart(2, "0");
+      days.push({
+        value: `\${yyyy}-\${mm}-\${dd}`,
+        day: dd,
+        month: TR_MONTHS[d.getUTCMonth()],
+        weekday: TR_DAYS[d.getUTCDay()],
+        isToday: i === 0
+      });
+    }
+    return days;
+  }
+
+  function buildDateGrid() {
+    const grid = document.getElementById('dateGrid');
+    grid.innerHTML = '';
+    getNextDays(5).forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'date-card' + (reservation.date === d.value ? ' selected' : '');
+      card.innerHTML = `
+        <div>
+          <div class="date-main">\${d.day} \${d.month}</div>
+          <div class="date-day">\${d.weekday}</div>
+        </div>
+        \${d.isToday ? '<span class="date-today">Bugün</span>' : '<span style="color:var(--muted);font-size:20px">→</span>'}
+      `;
+      card.onclick = () => {
+        reservation.date = d.value;
+        reservation.dateLabel = `\${d.day} \${d.month} \${d.weekday}`;
+        goTo('screen-time');
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  function buildTimeGrid() {
+    const grid = document.getElementById('timeGrid');
+    grid.innerHTML = '';
+    TIME_SLOTS.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'time-card' + (reservation.time === t ? ' selected' : '');
+      card.innerHTML = `<div class="time-val">\${t}</div><div class="time-label">2 saat</div>`;
+      card.onclick = () => {
+        reservation.time = t;
+        goTo('screen-guests');
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  function buildGuestGrid() {
+    const grid = document.getElementById('guestGrid');
+    grid.innerHTML = '';
+    [1,2,3,4,5,6].forEach(n => {
+      const card = document.createElement('div');
+      card.className = 'guest-card' + (reservation.guests === n ? ' selected' : '');
+      card.innerHTML = `<div class="guest-num">\${n}\${n===6?'+':''}</div><div class="guest-label">kişi</div>`;
+      card.onclick = () => {
+        reservation.guests = n;
+        goTo('screen-confirm');
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  function buildSummary() {
+    document.getElementById('sumName').textContent = reservation.name;
+    document.getElementById('sumDate').textContent = reservation.dateLabel;
+    document.getElementById('sumTime').textContent = reservation.time;
+    document.getElementById('sumGuests').textContent = reservation.guests + ' kişi';
+  }
+
+  async function submitReservation() {
+    const btn = document.getElementById('confirmBtn');
+    btn.classList.add('loading');
+    try {
+      const userId = tg?.initDataUnsafe?.user?.id || 0;
+      const username = tg?.initDataUnsafe?.user?.first_name || 'Guest';
+      const res = await fetch('/api/webapp-reserve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...reservation, userId, username })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById('resIdText').textContent = data.reservationId;
+        goTo('screen-success');
+        if (tg) tg.HapticFeedback?.notificationOccurred('success');
+      } else {
+        alert(data.message || 'Hata oluştu. Lütfen tekrar deneyin.');
+      }
+    } catch (e) {
+      alert('Bağlantı hatası. Lütfen tekrar deneyin.');
+    }
+    btn.classList.remove('loading');
+  }
+
+  async function submitCancel() {
+    const id = document.getElementById('cancelInput').value.trim();
+    if (!id) return;
+    const res = await fetch('/api/webapp-reserve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'cancel', reservationId: id })
+    });
+    const data = await res.json();
+    alert(data.ok ? '✅ Rezervasyon iptal edildi.' : '❌ Rezervasyon bulunamadı.');
+    if (data.ok) goTo('screen-welcome');
+  }
+
+  function copyId() {
+    const id = document.getElementById('resIdText').textContent;
+    navigator.clipboard?.writeText(id);
+    document.getElementById('resIdBox').style.borderColor = '#6b4c35';
+    setTimeout(() => document.getElementById('resIdBox').style.borderColor = '', 1000);
+  }
+</script>
+</body>
+</html>
+`);
 }
