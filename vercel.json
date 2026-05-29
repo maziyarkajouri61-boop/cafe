@@ -1,8 +1,11 @@
 {
   "version": 2,
   "functions": {
-    "api/webhook.js": {
-      "maxDuration": 15
-    }
-  }
+    "api/webhook.js": { "maxDuration": 15 },
+    "api/webapp-reserve.js": { "maxDuration": 15 }
+  },
+  "rewrites": [
+    { "source": "/app", "destination": "/public/index.html" },
+    { "source": "/app/(.*)", "destination": "/public/$1" }
+  ]
 }
